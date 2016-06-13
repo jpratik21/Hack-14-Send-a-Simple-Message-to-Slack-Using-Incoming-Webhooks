@@ -1,7 +1,7 @@
 <?php
 
 	// Your webhook URL
-	$webhook = 'WEBHOOK URL';
+	$webhook = '[WEBHOOK URL]';
 
 	// Encode the data
 	$data = 'payload=' . json_encode(array(
