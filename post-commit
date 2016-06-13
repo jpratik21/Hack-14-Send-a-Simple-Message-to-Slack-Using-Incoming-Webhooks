@@ -1,0 +1,65 @@
+#!/usr/bin/php
+<?php
+	// Your webhook URL
+	$webhook = '[WEBHOOK URL]';
+
+	// Get the last commit
+	exec('git log -1 --format=%h%n%an%n%ae%n%ar%n%s%n%b', $output);
+
+	// Assign the variables we know
+	$hash = $output[0];
+	$name = $output[1];
+	$email = $output[2];
+	$time = $output[3];
+	$subject = $output[4];
+
+	// Remove the keys from the array
+	unset($output[0], $output[1], $output[2], $output[3], $output[4]);
+	// Glue the array back together as a string
+	$body = implode("\n", $output);
+
+	// Encode the data
+	$data = 'payload=' . json_encode(array(
+		'username' => 'Git Bot',
+		'icon_emoji' => ':robot_face:',
+
+		'fallback' => 'The latest git commit',
+		'pretext' => 'There has been a new commit',
+		'color' => '#0066ff',
+
+		'fields' => array(
+			array(
+				'value' => 'Commit Hash:',
+				'short' => true
+			),
+			array(
+				'title' => '#' . $hash,
+				'short' => true
+			),
+			array(
+				'title' => $hash
+			),
+			array(
+				'value' => '<mailto:' . $email . '|' . $name . '>',
+				'short' => true
+			),
+			array(
+				'value' => $time,
+				'short' => true
+			),
+			array(
+				'title' => $subject,
+				'value' => $body
+			)
+		)
+	));
+
+	// PHP cURL POST request
+	$ch = curl_init($webhook);
+	curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
+	curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+	$result = curl_exec($ch);
+	curl_close($ch);
+
+	echo $result;
